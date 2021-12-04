@@ -24,6 +24,7 @@ NVME_INFOS = {
     'Unsafe Shutdowns:': 'unsafe_shutdowns',
     'Media and Data Integrity Errors:': 'media_data_integrity_errors',
     'Error Information Log Entries:': 'error_information_log_entries',
+    "SMART overall-health self-assessment test result:": "overall_health",
 }
 
 SMART_FIELDS = {
@@ -44,4 +45,5 @@ SMART_FIELDS = {
     "Drive Trip Temperature:": "drive_trip_temperature",
     "Manufactured in ": "manufacture_date",
     "Rotation Rate": "rotation_rate",
+    "SMART overall-health self-assessment test result:": "overall_health",
 }

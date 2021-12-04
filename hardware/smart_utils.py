@@ -157,6 +157,10 @@ def read_smart_ata(hwlst, device, optional_flag="", mode=""):
                             "rotation_rate"):
             continue
 
+        if read_smart_field(hwlst, line, device_name, "SMART overall-health self-assessment test result:",
+                            "overall_health"):
+            continue
+
         if line.startswith("ID#"):
             foundid = True
             continue
