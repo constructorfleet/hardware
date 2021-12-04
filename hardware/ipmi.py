@@ -136,6 +136,22 @@ def parse_ipmi_fru(output):
     return hrdw
 
 
+def parse_ipmi_bmc(output):
+    """Parse the output of the bmc info retrieved with ipmitool"""
+    hrdw = []
+
+    for line in output:
+        items = line.split(':')
+        if len(items) < 2:
+            continue
+        if items[0].lower().startswith('firmware revision'):
+            hrdw.append(('firmware', 'bmc', 'version', items[1].strip()))
+        elif items[0].lower().startswith('manufacturer name'):
+            hrdw.append(('firmware', 'bmc', 'vendor', items[1].strip()))
+
+    return hrdw
+
+
 def get_ipmi_sdr():
     ipmi_cmd = subprocess.Popen("ipmitool -I open sdr",
                                 shell=True,
@@ -152,6 +168,15 @@ def get_ipmi_fru():
                                 universal_newlines=True)
 
     return parse_ipmi_fru(ipmi_cmd.stdout)
+
+
+def get_ipmi_bmc_version():
+    ipmi_cmd = subprocess.Popen("ipmitool -I open bmc info",
+                                shell=True,
+                                stdout=subprocess.PIPE,
+                                universal_newlines=True)
+
+    return parse_ipmi_bmc(ipmi_cmd.stdout)
 
 
 def detect():

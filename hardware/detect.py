@@ -83,6 +83,7 @@ def main():
     hrdw.extend(sensors.detect_temperatures())
     hrdw.extend(ipmi.get_ipmi_sdr())
     hrdw.extend(ipmi.get_ipmi_fru())
+    hrdw.extend(ipmi.get_ipmi_bmc_version())
     hrdw.extend(rtc.detect_rtc_clock())
     hrdw.extend(detect_utils.detect_auxv())
     hrdw.extend(detect_utils.parse_dmesg())
