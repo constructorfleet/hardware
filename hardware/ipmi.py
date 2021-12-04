@@ -113,6 +113,29 @@ def parse_ipmi_sdr(output):
     return hrdw
 
 
+def parse_ipmi_fru(output):
+    """Parse the output of the fru info retrieved with ipmitool"""
+    hrdw = []
+
+    device_name = None
+    for line in output:
+        if len(line.strip()) == 0:
+            continue
+
+        items = line.split(':')
+        if len(items) < 2:
+            continue
+
+        if line.startswith("FRU Device Description"):
+            device_name = items[1].split('-FRU')[0].strip()
+        else:
+            device_prop = items[0].strip()
+            value = items[1].strip()
+
+            hrdw.append(('ipmi', device_name, device_prop, value))
+    return hrdw
+
+
 def get_ipmi_sdr():
     ipmi_cmd = subprocess.Popen("ipmitool -I open sdr",
                                 shell=True,
@@ -120,6 +143,15 @@ def get_ipmi_sdr():
                                 universal_newlines=True)
 
     return parse_ipmi_sdr(ipmi_cmd.stdout)
+
+
+def get_ipmi_fru():
+    ipmi_cmd = subprocess.Popen("ipmitool -I open fru",
+                                shell=True,
+                                stdout=subprocess.PIPE,
+                                universal_newlines=True)
+
+    return parse_ipmi_fru(ipmi_cmd.stdout)
 
 
 def detect():
