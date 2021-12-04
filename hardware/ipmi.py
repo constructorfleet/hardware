@@ -152,6 +152,22 @@ def parse_ipmi_bmc(output):
     return hrdw
 
 
+def parse_ipmi_hpm(output):
+    """Parse the output of the hpm info retrieved with ipmitool"""
+    hrdw = []
+    RE_PATTERN = re.compile('^\|[^0-9]*([0-9]+)\|([^\|]*)\|([^\|]*)\|([^\|]*)\|([^\|]*)\|')
+
+    for line in output:
+        match = RE_PATTERN.match(line)
+        if match:
+            id = match.group(1).strip()
+            name = match.group(2).strip()
+            version = match.group(3).strip().split(" ")[0]
+            hrdw.append(('firmware', name, 'version', version))
+
+    return hrdw
+
+
 def get_ipmi_sdr():
     ipmi_cmd = subprocess.Popen("ipmitool -I open sdr",
                                 shell=True,
@@ -177,6 +193,15 @@ def get_ipmi_bmc_version():
                                 universal_newlines=True)
 
     return parse_ipmi_bmc(ipmi_cmd.stdout)
+
+
+def get_ipmi_hpm_versions():
+    ipmi_cmd = subprocess.Popen("ipmitool -I open hpm check",
+                                shell=True,
+                                stdout=subprocess.PIPE,
+                                universal_newlines=True)
+
+    return parse_ipmi_hpm(ipmi_cmd.stdout)
 
 
 def detect():
