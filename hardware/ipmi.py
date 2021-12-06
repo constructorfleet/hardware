@@ -117,22 +117,36 @@ def parse_ipmi_fru(output):
     """Parse the output of the fru info retrieved with ipmitool"""
     hrdw = []
 
-    device_name = None
+    sys_cls = None
+    sys_type = None
     for line in output:
         if len(line.strip()) == 0:
+            sys_cls = None
+            sys_type = None
             continue
 
         items = line.split(':')
         if len(items) < 2:
             continue
 
-        if line.startswith("FRU Device Description"):
-            device_name = items[1].split('-FRU')[0].strip()
+        if line.startswith('FRU Device Description'):
+            if 'Builtin FRU Device' in items[1]:
+                sys_cls = 'oem'
+            else:
+                sys_cls = items[1].split('-FRU')[0].strip().lower()
+                if sys_cls.startswith('psu'):
+                    sys_type = sys_cls
+                    sys_cls = 'psu'
         else:
-            device_prop = items[0].strip()
             value = items[1].strip()
+            sys_subtype = items[0].strip()
+            if sys_type:
+                hrdw.append((sys_cls, sys_type, sys_subtype, value))
+            else:
+                items = sys_subtype.split(' ')
 
-            hrdw.append(('ipmi', device_name, device_prop, value))
+                hrdw.append((sys_cls, items[0], ' '.join(items[1:]), value))
+
     return hrdw
 
 
@@ -155,12 +169,11 @@ def parse_ipmi_bmc(output):
 def parse_ipmi_hpm(output):
     """Parse the output of the hpm info retrieved with ipmitool"""
     hrdw = []
-    RE_PATTERN = re.compile('^\|[^0-9]*([0-9]+)\|([^\|]*)\|([^\|]*)\|([^\|]*)\|([^\|]*)\|')
+    line_pattern = re.compile(r'^\|[^0-9]*([0-9]+)\|[^a-zA-Z ]* ?([^\|]*)\|([^\|]*)\|([^\|]*)\|([^\|]*)\|')
 
     for line in output:
-        match = RE_PATTERN.match(line)
+        match = line_pattern.match(line)
         if match:
-            id = match.group(1).strip()
             name = match.group(2).strip()
             version = match.group(3).strip().split(" ")[0]
             hrdw.append(('firmware', name, 'version', version))
